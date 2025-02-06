@@ -1,30 +1,82 @@
 import tkinter as tk
+import re
 import styles
 from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
 from database import conectar_bd
 
+def validar_labels (label):
+    patron = r'^[a-zA-Z]+$'
+    if re.match(patron, label):
+        return True
+    else:
+        return False
+    
+def validar_celular (celular):
+    patron = r'^\d+$'
+    if re.match(patron, celular):
+        return True
+    else:
+        return False
+
 # Funcion agregar proveedores
-def agregar_proveedor(entry_nombre, entry_telefono, entry_direccion, lista_proveedores):
-    nombre = entry_nombre.get()
-    celular = entry_telefono.get()
-    direccion = entry_direccion.get()
+def agregar_proveedor(lista_proveedores):
+    top_proveedor = tk.Toplevel()
+    top_proveedor.title("Alta proveedor")
+    top_proveedor.geometry("600x400")
+
+    frame_proveedores = ttk.LabelFrame(top_proveedor, text="Alta proveedor")
+    frame_proveedores.pack(padx=10,pady=10,fill="both", expand=True)
+
+    def alta_proveedor(entry_nombre, entry_direccion, entry_celular):
+        nombre = entry_nombre.get()
+        direccion = entry_direccion.get()
+        celular = entry_celular.get()
+        
+        # Control de errores
+        if not validar_labels(nombre):
+            messagebox.showerror("Error", "El nombre solo debe llevar letras A-Z a-z")
+            return
+        
+        if not nombre :
+            messagebox.showerror("Error", "El nombre es obligatorio")
+            return
+        
+        if not validar_celular(celular):
+            messagebox.showerror("Error", " Celular: Solo puede ingresar números")
+            return
+        
+        if not celular:
+            messagebox.showerror("Error", "Debe ingresar un numero de celular")
+            return
     
-    if not nombre:
-        messagebox.showerror("Error", "El nombre es obligatorio")
-        return
+        conn = conectar_bd()
+        c = conn.cursor()
+        c.execute("INSERT INTO Proveedores (nombre, direccion, celular) VALUES (?, ?, ?)",
+                (nombre,direccion, celular))
+        conn.commit()
+        messagebox.showinfo("Exito","Proveedor dado de alta correctamente")
+        actualizar_lista_proveedores(lista_proveedores)
+        top_proveedor.destroy()
+        conn.close()
     
-    conn = conectar_bd()
-    c = conn.cursor()
-    c.execute("INSERT INTO Proveedores (nombre, direccion, celular) VALUES (?, ?, ?)",
-            (nombre, direccion, celular))
-    conn.commit()
-    conn.close()
-    
-    messagebox.showinfo("Éxito", "Proveedor agregado correctamente")
-    entry_nombre.delete(0, tk.END)
-    entry_telefono.delete(0, tk.END)
-    entry_direccion.delete(0, tk.END)
-    actualizar_lista_proveedores(lista_proveedores)
+    label_nombre = ttk.Label(frame_proveedores, text="Nombre")
+    entry_nombre = ttk.Entry(frame_proveedores)
+    label_direccion = ttk.Label(frame_proveedores, text="Direccion")
+    entry_direccion = ttk.Entry(frame_proveedores)
+    label_celular = ttk.Label(frame_proveedores, text="Celular")
+    entry_celular = ttk.Entry(frame_proveedores)
+
+    btn_alta_proveedor = ttk.Button(frame_proveedores, text="Aceptar",
+                                    command=lambda: alta_proveedor(entry_nombre, entry_direccion, entry_celular))
+
+    label_nombre.pack()
+    entry_nombre.pack()
+    label_celular.pack()
+    entry_celular.pack()
+    label_direccion.pack()
+    entry_direccion.pack()
+    btn_alta_proveedor.pack()
 
 # Funcion para editar proveedores
 def editar_proveedor(lista_proveedores):
@@ -43,8 +95,8 @@ def editar_proveedor(lista_proveedores):
         
         conn = conectar_bd()
         c = conn.cursor()
-        c.execute("UPDATE Proveedores SET nombre=?, celular=?, direccion=? WHERE id_proveedor=?", 
-                (nuevo_nombre, nuevo_telefono, nuevo_direccion, id_proveedor))
+        c.execute("UPDATE Proveedores SET nombre=?, direccion=?, celular=? WHERE id_proveedor=?", 
+                (nuevo_nombre, nuevo_direccion, nuevo_telefono, id_proveedor))
         conn.commit()
         conn.close()
         
@@ -77,13 +129,20 @@ def editar_proveedor(lista_proveedores):
 def eliminar_proveedor(lista_proveedores):
     seleccionado = lista_proveedores.selection()
     if not seleccionado:
-        messagebox.showerror("Error", "Selecciona un proveedor para eliminar")
+        # Asegurar que el messagebox esté en primer plano
+        top = tk.Toplevel()
+        top.withdraw()  # Ocultar la ventana temporal
+        messagebox.showerror("Error", "Selecciona un proveedor para eliminar", parent=top)
+        top.destroy()  # Cerrar la ventana temporal
         return
     
     item = lista_proveedores.item(seleccionado)
     id_proveedor = item["values"][0]
 
-    respuesta = messagebox.askyesno("Confirmar", f"¿Seguro que deseas eliminar al proveedor ID {id_proveedor}?")
+    top = tk.Toplevel()
+    top.withdraw()  # Ocultar la ventana temporal
+    respuesta = messagebox.askyesno("Confirmar", f"¿Seguro que deseas eliminar al proveedor ID {id_proveedor}?",parent=top)
+    top.destroy()
     
     if respuesta:
         conn = conectar_bd()
@@ -92,7 +151,10 @@ def eliminar_proveedor(lista_proveedores):
         conn.commit()
         conn.close()
         
-        messagebox.showinfo("Éxito", "Proveedor eliminado correctamente")
+        top = tk.Toplevel()
+        top.withdraw()  # Ocultar la ventana temporal
+        messagebox.showinfo("Éxito", "Proveedor eliminado correctamente", parent=top)
+        top.destroy()  # Cerrar la ventana temporal
         actualizar_lista_proveedores(lista_proveedores)
 
 # Función para actualizar la lista de proveedores
@@ -106,47 +168,62 @@ def actualizar_lista_proveedores(lista_proveedores):
     conn.close()
 
 # Funcion para ver la ventana de edicion, nuevos y eliminar proveedores
-def ventana_proveedores():
+def ventana_proveedores(ventana_principal):
     top = tk.Toplevel()
     top.title("Gestión de Proveedores")
-    top.geometry("600x400")
+    top.geometry("800x400")
+
+    # Cuando se cierra la ventana de proveedores, mostrar la ventana principal
+    top.protocol("WM_DELETE_WINDOW", lambda: cerrar_ventana(top, ventana_principal))
     
     frame_proveedores = ttk.LabelFrame(top, text="Gestión de Proveedores")
     frame_proveedores.pack(padx=10, pady=10, fill="both", expand=True)
     
-    label_nombre = ttk.Label(frame_proveedores, text="Nombre:")
-    entry_nombre = ttk.Entry(frame_proveedores)
-    label_telefono = ttk.Label(frame_proveedores, text="Celular:")
-    entry_telefono = ttk.Entry(frame_proveedores)
-    label_direccion = ttk.Label(frame_proveedores, text="Dirección:")
-    entry_direccion = ttk.Entry(frame_proveedores)
+    # Traemos las imagenes para usarlas
+    try:
+        icono_agregar = ImageTk.PhotoImage(Image.open("./assets/icons/agregar_p.png").resize((20, 20)))
+        icono_editar = ImageTk.PhotoImage(Image.open("./assets/icons/editar_p.png").resize((20, 20)))
+        icono_eliminar = ImageTk.PhotoImage(Image.open("./assets/icons/delete_p.png").resize((20, 20)))
+    except FileNotFoundError:
+        messagebox.showerror("Error", "No se encontraron los archivos de iconos.")
+        return
     
-    btn_agregar = ttk.Button(frame_proveedores, style="Boton.TButton",compound=tk.LEFT, text="Agregar Proveedor", 
-                            command=lambda: agregar_proveedor(entry_nombre, entry_telefono, entry_direccion, lista_proveedores))
+    # Traemos los estilos para los botones
+    styles.configurar_estilos()
+
+    frame_botones = ttk.Frame(frame_proveedores)
+    frame_botones.pack(pady=10)
+
+    btn_agregar_proveedor = ttk.Button(frame_botones, text="Nuevo Proveedor", image=icono_agregar, style="Boton.TButton",compound=tk.LEFT, 
+                            command=lambda: agregar_proveedor(lista_proveedores))
+    btn_editar_proveedor = ttk.Button(frame_botones,style="Boton.TButton", text="Editar Proveedor", image=icono_editar,compound=tk.LEFT,
+                            command=lambda: editar_proveedor(lista_proveedores))
+    btn_eliminar_proveedor = ttk.Button(frame_botones,style="Boton.TButton", text="Eliminar Proveedor", image=icono_eliminar,compound=tk.LEFT,
+                            command=lambda: eliminar_proveedor(lista_proveedores))
     
+    btn_agregar_proveedor.pack(side=tk.LEFT, padx=5)
+    btn_editar_proveedor.pack(side=tk.LEFT, padx=5)
+    btn_eliminar_proveedor.pack(side=tk.LEFT, padx=5)
+
     lista_proveedores = ttk.Treeview(frame_proveedores, columns=("ID", "Nombre", "Dirección", "Celular"), show="headings")
     for col in ("ID", "Nombre", "Dirección", "Celular"):
-        lista_proveedores.heading(col, text=col)
-    
-    label_nombre.pack()
-    entry_nombre.pack()
-    label_telefono.pack()
-    entry_telefono.pack()
-    label_direccion.pack()
-    entry_direccion.pack()
-    btn_agregar.pack()
+        lista_proveedores.heading(col, text=col, anchor="center")
 
-    btn_editar = ttk.Button(frame_proveedores,style="Boton.TButton", text="Editar Proveedor",compound=tk.LEFT, command=lambda: editar_proveedor(lista_proveedores))
-    btn_editar.pack()
-    btn_eliminar = ttk.Button(frame_proveedores,style="Boton.TButton", text="Eliminar Proveedor",compound=tk.LEFT, command=lambda: eliminar_proveedor(lista_proveedores))
-    btn_eliminar.pack()
+    for col in ("ID", "Nombre", "Dirección", "Celular"):
+        lista_proveedores.column(col, anchor="center")
 
-    btn_agregar.pack(side=tk.LEFT, padx=5)
-    btn_editar.pack(side=tk.LEFT, padx=5)
-    btn_eliminar.pack(side=tk.LEFT, padx=5)
 
     lista_proveedores.pack(fill="both", expand=True)
 
 
     
     actualizar_lista_proveedores(lista_proveedores)
+
+    top.icono_agregar = icono_agregar
+    top.icono_editar = icono_editar
+    top.icono_eliminar = icono_eliminar
+
+# Función para cerrar la ventana de proveedores y mostrar la ventana principal
+def cerrar_ventana(ventana_secundaria, ventana_principal):
+    ventana_secundaria.destroy()  # Cierra la ventana secundaria
+    ventana_principal.deiconify()  # Muestra la ventana principal
