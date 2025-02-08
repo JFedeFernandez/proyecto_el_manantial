@@ -164,7 +164,8 @@ def actualizar_lista_proveedores(lista_proveedores):
     c = conn.cursor()
     c.execute("SELECT * FROM Proveedores")
     for fila in c.fetchall():
-        lista_proveedores.insert("", tk.END, values=fila)
+        fila_mayus = tuple(str(valor).upper() for valor in fila)
+        lista_proveedores.insert("", tk.END, values=fila_mayus)
     conn.close()
 
 # Funcion para ver la ventana de edicion, nuevos y eliminar proveedores
