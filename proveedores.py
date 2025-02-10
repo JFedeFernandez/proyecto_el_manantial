@@ -168,11 +168,26 @@ def actualizar_lista_proveedores(lista_proveedores):
         lista_proveedores.insert("", tk.END, values=fila_mayus)
     conn.close()
 
+def centrar_ventana(root, ancho, alto):
+
+    # Obtenemos las dimensiones de la pantalla
+    ancho_pantalla = root.winfo_screenwidth()
+    alto_pantalla = root.winfo_screenheight()
+
+    # Calculamos las coordenadas x e y para centrar la ventana
+    x = (ancho_pantalla // 2) - (ancho // 2)
+    y = (alto_pantalla // 2) - (alto // 2)
+
+    # Establecemos la geometría de la ventana
+    root.geometry(f'{ancho}x{alto}+{x}+{y}')
+
 # Funcion para ver la ventana de edicion, nuevos y eliminar proveedores
 def ventana_proveedores(ventana_principal):
     top = tk.Toplevel()
     top.title("Gestión de Proveedores")
-    top.geometry("800x400")
+    ancho = 1600
+    alto = 900
+    centrar_ventana(top, ancho, alto)
 
     # Cuando se cierra la ventana de proveedores, mostrar la ventana principal
     top.protocol("WM_DELETE_WINDOW", lambda: cerrar_ventana(top, ventana_principal))
@@ -210,8 +225,12 @@ def ventana_proveedores(ventana_principal):
     for col in ("ID", "Nombre", "Dirección", "Celular"):
         lista_proveedores.heading(col, text=col, anchor="center")
 
-    for col in ("ID", "Nombre", "Dirección", "Celular"):
-        lista_proveedores.column(col, anchor="center")
+
+    lista_proveedores.column("ID",width=80, anchor="center")
+    lista_proveedores.column("Nombre",width=200, anchor="center")
+    lista_proveedores.column("Dirección",width=200, anchor="center")
+    lista_proveedores.column("Celular",width=200, anchor="center")
+
 
 
     lista_proveedores.pack(fill="both", expand=True)

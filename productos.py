@@ -313,7 +313,7 @@ def actualizar_lista_productos(lista_productos):
     conn = conectar_bd()
     c = conn.cursor()
     consulta = """
-    SELECT p.id_producto, pr.id_proveedor || ' - ' || pr.nombre as proveedor,c.id_categoria || ' - ' || c.nombre as categoria, p.marca, p.descripcion, p.precio_venta, p.precio_compra, p.stock, p.descuento
+    SELECT p.id_producto, pr.id_proveedor || ' - ' || pr.nombre as proveedor,c.id_categoria || ' - ' || c.nombre as categoria, p.marca, p.descripcion, ' $ ' || p.precio_venta, ' $ ' || p.precio_compra, p.stock, p.descuento || ' % '
     FROM Productos p
     JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor
     JOIN Categoria c ON p.id_categoria = c.id_categoria
@@ -324,10 +324,25 @@ def actualizar_lista_productos(lista_productos):
         lista_productos.insert("", tk.END, values=fila_mayus)
     conn.close()
 
+def centrar_ventana(root, ancho, alto):
+
+    # Obtenemos las dimensiones de la pantalla
+    ancho_pantalla = root.winfo_screenwidth()
+    alto_pantalla = root.winfo_screenheight()
+
+    # Calculamos las coordenadas x e y para centrar la ventana
+    x = (ancho_pantalla // 2) - (ancho // 2)
+    y = (alto_pantalla // 2) - (alto // 2)
+
+    # Establecemos la geometría de la ventana
+    root.geometry(f'{ancho}x{alto}+{x}+{y}')
+
 def ventana_productos(ventana_principal):
     top = tk.Toplevel()
     top.title("Gestion de Productos")
-    top.geometry("1266x600")
+    ancho = 1600
+    alto = 900
+    centrar_ventana(top, ancho, alto)
 
     frame_productos = ttk.LabelFrame(top, text="Gestion de Productos")
     frame_productos.pack(padx=10, pady=10, fill="both", expand=True)
@@ -361,12 +376,22 @@ def ventana_productos(ventana_principal):
     btn_editar_producto.pack(side=tk.LEFT, padx=5)
     btn_eliminar_producto.pack(side=tk.LEFT, padx=5)
 
-    lista_productos = ttk.Treeview(frame_productos, columns=("ID Producto", "Proveedor", "Categoria", "Marca del Producto", "Descripcion", "Precio de venta", "Precio de compra", "Stock", "Descuento"), show="headings")
-    for col in ("ID Producto", "Proveedor","Categoria", "Marca del Producto", "Descripcion", "Precio de venta", "Precio de compra", "Stock", "Descuento"):
+    lista_productos = ttk.Treeview(frame_productos, columns=("ID", "Proveedor", "Categoria", "Marca Producto", "Descripcion", "Precio venta", "Precio compra", "Stock", "Descuento"), show="headings")
+    
+    # Configuracion de encabezados
+    for col in ("ID", "Proveedor","Categoria", "Marca Producto", "Descripcion", "Precio venta", "Precio compra", "Stock", "Descuento"):
         lista_productos.heading(col, text=col, anchor="center")
 
-    for col in ("ID Producto", "Proveedor", "Categoria", "Marca del Producto", "Descripcion", "Precio de venta", "Precio de compra", "Stock", "Descuento"):
-        lista_productos.column(col, anchor="center")
+    # Configuracion ancho columnas
+    lista_productos.column("ID", width=80, anchor="center")
+    lista_productos.column("Proveedor", width=200, anchor="center")
+    lista_productos.column("Categoria", width=200, anchor="center")
+    lista_productos.column("Marca Producto", width=200, anchor="center")
+    lista_productos.column("Descripcion", width=200, anchor="center")
+    lista_productos.column("Precio venta", width=200, anchor="center")
+    lista_productos.column("Precio compra", width=200, anchor="center")
+    lista_productos.column("Stock", width=80, anchor="center")
+    lista_productos.column("Descuento", width=80, anchor="center")
 
     lista_productos.pack(fill="both", expand=True)
 

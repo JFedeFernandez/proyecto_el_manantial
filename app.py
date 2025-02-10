@@ -8,10 +8,25 @@ from clientes import ventana_clientes;
 from productos import ventana_productos;
 from categoria import ventana_categoria;
 
+def centrar_ventana(root, ancho, alto):
+
+    # Obtenemos las dimensiones de la pantalla
+    ancho_pantalla = root.winfo_screenwidth()
+    alto_pantalla = root.winfo_screenheight()
+
+    # Calculamos las coordenadas x e y para centrar la ventana
+    x = (ancho_pantalla // 2) - (ancho // 2)
+    y = (alto_pantalla // 2) - (alto // 2)
+
+    # Establecemos la geometría de la ventana
+    root.geometry(f'{ancho}x{alto}+{x}+{y}')
+
 def app():
     root = tk.Tk()
     root.title("Sistema de Gestión")
-    root.geometry("400x400")
+    ancho_ventana = 400
+    alto_ventana = 400
+    centrar_ventana(root, ancho_ventana, alto_ventana)
     
     styles.configurar_estilos()
 

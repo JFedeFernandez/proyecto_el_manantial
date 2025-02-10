@@ -121,10 +121,25 @@ def actualizar_lista_categorias(lista_categorias):
         lista_categorias.insert("", tk.END, values=fila_mayus)
     conn.close()
 
+def centrar_ventana(root, ancho, alto):
+
+    # Obtenemos las dimensiones de la pantalla
+    ancho_pantalla = root.winfo_screenwidth()
+    alto_pantalla = root.winfo_screenheight()
+
+    # Calculamos las coordenadas x e y para centrar la ventana
+    x = (ancho_pantalla // 2) - (ancho // 2)
+    y = (alto_pantalla // 2) - (alto // 2)
+
+    # Establecemos la geometría de la ventana
+    root.geometry(f'{ancho}x{alto}+{x}+{y}')
+
 def ventana_categoria(ventana_principal):
     top = tk.Toplevel()
     top.title("Gestion de Productos")
-    top.geometry("1266x600")
+    ancho = 1600
+    alto = 900
+    centrar_ventana(top, ancho, alto)
 
     frame_categoria = ttk.LabelFrame(top, text="Gestion de Categoria")
     frame_categoria.pack(padx=10, pady=10, fill="both", expand=True)
@@ -162,8 +177,9 @@ def ventana_categoria(ventana_principal):
     for col in ("ID","Nombre Categoria", "Descripcion"):
         lista_categorias.heading(col, text=col, anchor="center")
 
-    for col in ("ID","Nombre Categoria", "Descripcion"):
-        lista_categorias.column(col, anchor="center")
+    lista_categorias.column("ID", width=80, anchor="center")
+    lista_categorias.column("Nombre Categoria", width=200, anchor="center")
+    lista_categorias.column("Descripcion", width=200, anchor="center")
 
     lista_categorias.pack(fill="both", expand=True)
 
