@@ -22,17 +22,26 @@ def crear_tablas():
         direccion TEXT,
         celular INTEGER
     );
+                    
+    CREATE TABLE IF NOT EXISTS Categoria (
+        id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        descripcion TEXT NOT NULL
+    );
     
     CREATE TABLE IF NOT EXISTS Productos (
         id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
         id_proveedor INTEGER NOT NULL,
-        nombre TEXT NOT NULL,
+        id_categoria INTEGER NOT NULL,
+        marca TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
         precio_venta REAL NOT NULL,
         precio_compra REAL NOT NULL,
         stock INTEGER NOT NULL,
         descuento INTEGER,
 
         FOREIGN KEY (id_proveedor) REFERENCES Proveedores(id_proveedor) ON DELETE CASCADE
+        FOREIGN KEY (id_categoria) REFERENCES Categoria(id_categoria) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS Compra (

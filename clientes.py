@@ -208,7 +208,7 @@ def ventana_clientes(ventana_principal):
 
     top.protocol("WM_DELETE_WINDOW", lambda: cerrar_ventana(top, ventana_principal))
 
-    frame_clientes = ttk.Label(top)
+    frame_clientes = ttk.LabelFrame(top, text="Gestion de Clientes")
     frame_clientes.pack(padx=10, pady=10, fill="both", expand=True)
 
 
@@ -229,8 +229,10 @@ def ventana_clientes(ventana_principal):
 
     btn_agregar_cliente = ttk.Button(frame_botones, text="Nuevo Cliente", image=icono_agregar,compound=tk.LEFT,style="Boton.TButton", 
                                     command=lambda: ventana_nuevo_cliente(lista_clientes))
-    btn_editar_cliente = ttk.Button(frame_botones, text="Editar Cliente",image=icono_editar,compound=tk.LEFT,style="Boton.TButton", command=lambda: editar_cliente(lista_clientes))
-    btn_eliminar_cliente = ttk.Button(frame_botones,text="Eliminar Cliente",image=icono_eliminar,compound=tk.LEFT,style="Boton.TButton", command=lambda: eliminar_cliente(lista_clientes))
+    btn_editar_cliente = ttk.Button(frame_botones, text="Editar Cliente",image=icono_editar,compound=tk.LEFT,style="Boton.TButton",
+                                    command=lambda: editar_cliente(lista_clientes))
+    btn_eliminar_cliente = ttk.Button(frame_botones,text="Eliminar Cliente",image=icono_eliminar,compound=tk.LEFT,style="Boton.TButton",
+                                    command=lambda: eliminar_cliente(lista_clientes))
 
     btn_agregar_cliente.pack(side=tk.LEFT, padx=5)
     btn_editar_cliente.pack(side=tk.LEFT, padx=5)
